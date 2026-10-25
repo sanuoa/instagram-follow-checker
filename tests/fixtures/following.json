@@ -1,0 +1,7 @@
+{
+  "relationships_following": [
+    {"title":"alice","string_list_data":[{"value":"alice"}]},
+    {"title":"bob","string_list_data":[{"value":"bob"}]},
+    {"title":"charlie","string_list_data":[{"value":"charlie"}]}
+  ]
+}
