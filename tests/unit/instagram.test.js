@@ -113,6 +113,30 @@ describe("explicit export schemas", () => {
     ).toThrow("No valid usernames");
   });
 
+  it("reports malformed entries even when a valid title supplies the username", () => {
+    const result = parseExport(
+      {
+        relationships_following: [
+          { title: "alice", string_list_data: [null, 42] },
+        ],
+      },
+      "following",
+    );
+    expect(names(result.accounts)).toEqual(["alice"]);
+    expect(result.invalidEntries).toBe(2);
+    expect(result.skippedRecords).toBe(0);
+    expect(result.issues).toHaveLength(2);
+  });
+
+  it("rejects records with malformed optional schema fields", () => {
+    expect(() =>
+      parseExport(
+        [{ title: { name: "alice" }, string_list_data: [{ value: "alice" }] }],
+        "followers",
+      ),
+    ).toThrow("Unsupported");
+  });
+
   it("deduplicates within files and across split follower exports", () => {
     const first = parseExport(fixture("followers_1.json"), "followers");
     const second = parseExport(

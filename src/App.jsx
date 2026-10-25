@@ -16,6 +16,7 @@ const emptyImports = () => ({
 export default function App() {
   const [imports, setImports] = useState(emptyImports);
   const [comparison, setComparison] = useState(null);
+  const [reportVersion, setReportVersion] = useState(0);
   const [isDemo, setIsDemo] = useState(false);
   const [comparing, setComparing] = useState(false);
   const [notice, setNotice] = useState("");
@@ -84,6 +85,7 @@ export default function App() {
     );
     setComparing(false);
     setNotice("Comparison complete. Your connection report is below.");
+    setReportVersion((value) => value + 1);
   }
 
   function invalidatePendingWork() {
@@ -118,6 +120,7 @@ export default function App() {
     });
     setComparison(compareAccounts(followers.accounts, following.accounts));
     setIsDemo(true);
+    setReportVersion((value) => value + 1);
     setNotice(
       "Fictional demo loaded: bob does not follow you back, you do not follow david back, and alice and charlie are mutual follows.",
     );
@@ -300,7 +303,7 @@ export default function App() {
 
         {comparison ? (
           <Results
-            key={isDemo ? "demo" : `${versions.current.comparison}`}
+            key={reportVersion}
             comparison={comparison}
             isDemo={isDemo}
           />

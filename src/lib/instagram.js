@@ -29,6 +29,7 @@ function isRelationshipRecord(record, hasWrapper) {
   // Restrict this schema so comment, message, and other export records aren't
   // interpreted as relationships just because they contain a title or value.
   if (Object.keys(record).some((key) => !recordFields.has(key))) return false;
+  if (has(record, "title") && typeof record.title !== "string") return false;
   if (
     has(record, "media_list") &&
     (!Array.isArray(record.media_list) || record.media_list.length > 0)
@@ -101,7 +102,12 @@ export function parseExport(data, kind) {
       return;
     }
 
-    const entries = record.string_list_data ?? [];
+    const entries = (record.string_list_data ?? []).filter((entry) => {
+      if (isObject(entry)) return true;
+      invalidEntries += 1;
+      report("Skipped a malformed string_list_data entry.");
+      return false;
+    });
     // Prefer value fields. Fall back to title only when no nonempty value was
     // supplied; an invalid supplied value must not turn into a guessed name.
     const hasValues = entries.some(
