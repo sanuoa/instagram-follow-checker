@@ -12,6 +12,9 @@ playwright-report/
 *.zip
 *.csv
 *.html
+exports/
+private-data/
+followers_and_following/
 !package.json
 !package-lock.json
 !index.html

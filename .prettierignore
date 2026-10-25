@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+exports/
+private-data/
+followers_and_following/
+# Don't format private exports copied into the project.
+*.json
+!package.json
+!package-lock.json
+!tests/fixtures/**
