@@ -482,6 +482,21 @@ h1 > span {
   gap: 18px;
   margin-top: 25px;
 }
+.unified-upload {
+  margin-top: 24px;
+}
+.detected-lists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 20px;
+}
+.ignored-files {
+  margin-top: 14px;
+  color: var(--secondary);
+  font-size: 11px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
 .import-card {
   min-width: 0;
   padding: 22px;

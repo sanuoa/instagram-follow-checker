@@ -40,12 +40,12 @@ To compare your own data:
 
 1. In Instagram's Accounts Center, find **Your information and permissions → Export your information** (the labels can change). Request your **followers and following**, choose **JSON**, and use an **all-time** date range.
 2. Unzip the downloaded archive on your computer. The files are usually in `connections/followers_and_following/`.
-3. Choose **all** your `followers_1.json`, `followers_2.json`, and other split followers files together in the followers input. Choose `following.json` in the separate following input.
+3. Use the **single upload area** to select **all** `followers_*.json` files and `following.json` **together**. You can also select one combined JSON file containing `relationships_followers` and `relationships_following` arrays. Both lists are detected automatically.
 4. Review the import counts and any skipped-record warnings, then click **Compare accounts**.
 5. Choose a result category, search by username, and sort A–Z or Z–A. **Export CSV** downloads every account matching that category and search, in the selected order, including results on other pages.
 6. Use **Clear all data** or reload the page to clear the imported data and results. Downloaded CSV files remain on your computer until you delete them.
 
-Choosing files again replaces that input's whole selection; it does not append to it. Select split files together. Importing your own files clears both demo lists first, so demo usernames never mix with your data. Any change to an input removes the old report until you compare again.
+Choosing files again replaces the entire selection; select both lists and all split files together. Importing your own files replaces the demo completely. A missing or invalid list blocks comparison and clears the old report. The export guidance and Accounts Center link are directly below the upload area. Known request, close-friends, recently-unfollowed, and custom-list files may be selected alongside the relationship files; they are reported as ignored and never used for comparisons. Unknown files cause a helpful error.
 
 ## Supported JSON structures
 
@@ -76,32 +76,34 @@ Followers also support a `relationships_followers` wrapper. Following must use a
 
 Important parsing rules:
 
-- Relationship records may contain `title`, an empty `media_list`, and `string_list_data`. Unknown record fields or malformed optional fields are rejected or reported as skipped records. Message, comment, media, and `string_map_data` records are not supported.
-- The parser reads all usable `string_list_data[].value` fields. A valid `title` is a fallback when there is no nonempty value. Title-only records require a relationship wrapper or an empty `media_list` to establish the record schema. Bare title-only objects in a followers array are unsupported.
+- Relationship records may contain `title`, an empty `media_list` or `media_list_data`, and `string_list_data`. Unknown record fields or malformed optional fields are rejected or reported as skipped records. Message, comment, media, and `string_map_data` records are not supported.
+- The parser reads all usable `string_list_data[].value` fields. A valid `title` is a fallback when there is no nonempty value. Title-only records require a relationship wrapper or an empty `media_list` or `media_list_data` to establish the record schema. Bare title-only objects in a followers array are unsupported.
 - A supplied, invalid nonempty value is reported; it is never replaced by a guessed username. Usernames are never extracted from imported URLs.
 - Usernames are trimmed, one leading `@` is removed, and comparison uses lowercase keys. Display keeps the first encountered spelling in each list. Valid usernames contain 1–30 ASCII letters, numbers, underscores, or periods; periods cannot be consecutive or at either end.
 - Duplicates are removed within files and across split followers files. Totals count unique valid usernames.
 - A real `[]` followers list or `{"relationships_following": []}` is valid empty input. Missing files, broken JSON, unsupported schemas, and nonempty lists without any usable usernames block comparison.
 - Mixed valid and invalid records show skipped-record and invalid-entry counts, plus record-number details. Counts may overlap: a skipped record can contain invalid entries. Results use only valid entries, so review warnings before relying on them.
 - If any split file fails validation, the **whole selection** is rejected. Partial split imports would give misleading comparisons. The app cannot know whether you forgot to select another split file.
-- Limits: 25 MB per file, 100 MB per selection, at most 50 followers files, and one following file. Large files are read sequentially; results render 50 rows per page.
+- Limits: 25 MB per file, 100 MB per selection, at most 50 files total, and exactly one following list. Large files are read sequentially; results render 50 rows per page.
 
 Use files from the same export and date range. Old or incomplete exports can produce incomplete results. Instagram can change its export format; unsupported formats show an error instead of guessed results.
 
+Raw follower arrays are identified by a `followers.json` or `followers_1.json` style filename as well as their record schema. Keep those original filenames. Wrapper-based exports are identified by their `relationships_followers` and `relationships_following` keys regardless of filename. A combined file must contain both keys with valid arrays; a single empty list does not stand in for a missing list.
+
 ## How the React code fits together
 
-| File                            | Purpose                                                                                                                            |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `src/main.jsx`                  | Mounts the React application into `index.html`.                                                                                    |
-| `src/App.jsx`                   | Holds import and comparison state, handles Compare, demo, and Clear, and arranges the dashboard.                                   |
-| `src/components/ImportCard.jsx` | File input, import status, validation messages, and record diagnostics.                                                            |
-| `src/components/Results.jsx`    | Category filters, search, sorting, pagination, profile links, and CSV download.                                                    |
-| `src/lib/instagram.js`          | Pure functions for schema detection, parsing, username normalization, deduplication, comparison, filtering, and safe profile URLs. |
-| `src/lib/files.js`              | Browser file reading, input limits, and all-or-nothing batch imports.                                                              |
-| `src/lib/csv.js`                | CSV escaping, spreadsheet-formula protection, and the download helper.                                                             |
-| `src/data/demo.js`              | The small fictional demo.                                                                                                          |
-| `src/styles.css`                | Theme variables, layout, responsive styles, focus states, and reduced-motion support.                                              |
-| `tests/fixtures/`               | Synthetic test files only. Never add real exports here.                                                                            |
+| File                              | Purpose                                                                                                                            |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.jsx`                    | Mounts the React application into `index.html`.                                                                                    |
+| `src/App.jsx`                     | Holds import and comparison state, handles Compare, demo, and Clear, and arranges the dashboard.                                   |
+| `src/components/ExportUpload.jsx` | One upload area, automatic-detection status, and validation messages.                                                              |
+| `src/components/Results.jsx`      | Category filters, search, sorting, pagination, profile links, and CSV download.                                                    |
+| `src/lib/instagram.js`            | Pure functions for schema detection, parsing, username normalization, deduplication, comparison, filtering, and safe profile URLs. |
+| `src/lib/files.js`                | Browser file reading, automatic list detection, combined-file support, input limits, and all-or-nothing imports.                   |
+| `src/lib/csv.js`                  | CSV escaping, spreadsheet-formula protection, and the download helper.                                                             |
+| `src/data/demo.js`                | The small fictional demo.                                                                                                          |
+| `src/styles.css`                  | Theme variables, layout, responsive styles, focus states, and reduced-motion support.                                              |
+| `tests/fixtures/`                 | Synthetic test files only. Never add real exports here.                                                                            |
 
 `useState` stores information that affects the screen. When you import a file or choose a filter, its setter updates that information and React draws the relevant UI again. File data stays in this state; it is not stored in a database or browser storage.
 
@@ -159,6 +161,7 @@ The implementation is integrated into **`dev`** with separate stage branches and
 - `feat/dashboard`: dashboard, responsive theme, imports, result controls, and browser tests.
 - `bug/import-diagnostics`: malformed-entry reporting and report filter reset fixes.
 - `docs/development-guide`: this guide and final project housekeeping.
+- `feat/unified-export-import`: one upload area, automatic detection, combined-file support, updated schema support, and guidance below the uploader.
 
 For your next change, branch from `dev`, make one focused change, run the checks, and commit it:
 
