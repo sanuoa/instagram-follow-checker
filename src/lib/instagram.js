@@ -22,7 +22,12 @@ export class ImportError extends Error {
 const isObject = (value) =>
   value !== null && typeof value === "object" && !Array.isArray(value);
 const has = (value, key) => Object.prototype.hasOwnProperty.call(value, key);
-const recordFields = new Set(["title", "media_list", "string_list_data"]);
+const recordFields = new Set([
+  "title",
+  "media_list",
+  "media_list_data",
+  "string_list_data",
+]);
 
 function isRelationshipRecord(record, hasWrapper) {
   if (!isObject(record)) return false;
@@ -30,6 +35,12 @@ function isRelationshipRecord(record, hasWrapper) {
   // interpreted as relationships just because they contain a title or value.
   if (Object.keys(record).some((key) => !recordFields.has(key))) return false;
   if (has(record, "title") && typeof record.title !== "string") return false;
+  if (
+    has(record, "media_list_data") &&
+    (!Array.isArray(record.media_list_data) ||
+      record.media_list_data.length > 0)
+  )
+    return false;
   if (
     has(record, "media_list") &&
     (!Array.isArray(record.media_list) || record.media_list.length > 0)
@@ -39,7 +50,10 @@ function isRelationshipRecord(record, hasWrapper) {
     return Array.isArray(record.string_list_data);
   // A title alone needs context: either a relationship wrapper or media_list.
   return (
-    has(record, "title") && (hasWrapper || Array.isArray(record.media_list))
+    has(record, "title") &&
+    (hasWrapper ||
+      Array.isArray(record.media_list) ||
+      Array.isArray(record.media_list_data))
   );
 }
 
