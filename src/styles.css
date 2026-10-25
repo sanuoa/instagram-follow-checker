@@ -376,6 +376,38 @@ h1 > span {
   letter-spacing: -0.5px;
   margin-top: 9px;
 }
+.export-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid #58402e;
+  border-radius: 8px;
+  background: #201b17;
+  color: var(--secondary);
+  font-size: 12px;
+  line-height: 1.8;
+}
+.export-notice > svg {
+  margin-top: 2px;
+  color: var(--orange);
+}
+.export-notice strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.export-notice a {
+  color: var(--orange);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.export-notice a:hover {
+  color: #ffb075;
+}
+.export-notice a svg {
+  vertical-align: -1px;
+}
 .section-description {
   color: var(--secondary);
   font-size: 12px;

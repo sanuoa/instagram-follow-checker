@@ -244,6 +244,28 @@ export default function App() {
             Choose the JSON files from your own Instagram export. No account
             access needed.
           </p>
+          <aside
+            className="export-notice"
+            aria-label="Where to export your Instagram data"
+          >
+            <Icon name="info" size={18} />
+            <p>
+              <strong>Need your Instagram data?</strong> Go to Instagram’s{" "}
+              <a
+                href="https://accountscenter.instagram.com/info_and_permissions/"
+                target="_blank"
+                rel="noopener noreferrer"
+                referrerPolicy="no-referrer"
+                aria-label="Open Instagram Accounts Center (new tab)"
+              >
+                Accounts Center <Icon name="external" size={12} />
+              </a>{" "}
+              → Your information and permissions → Export your information.
+              Choose <strong>Followers and following</strong>,{" "}
+              <strong>JSON</strong> format, and an <strong>All time</strong>{" "}
+              date range. Menu labels may vary.
+            </p>
+          </aside>
           <div className="import-grid">
             <ImportCard
               kind="followers"
