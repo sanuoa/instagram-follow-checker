@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+coverage/
+test-results/
+playwright-report/
+
+# Instagram exports and generated result files are private.
+*.json
+*.zip
+*.csv
+*.html
+exports/
+private-data/
+followers_and_following/
+!package.json
+!package-lock.json
+!index.html
+!tests/fixtures/**
