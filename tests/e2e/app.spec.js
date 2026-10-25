@@ -235,3 +235,13 @@ test("clear cancels stale import results and small screens do not overflow", asy
       fullPage: true,
     });
 });
+
+test("loading the demo again resets result filters", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Try a demo" }).click();
+  await page.getByRole("searchbox").fill("no_match");
+  await expect(page.getByText("No matching usernames")).toBeVisible();
+  await page.getByRole("button", { name: "Try a demo" }).click();
+  await expect(page.getByRole("searchbox")).toHaveValue("");
+  await expect(resultRows(page).first()).toContainText("@bob");
+});
