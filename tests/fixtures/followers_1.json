@@ -1,4 +1,12 @@
 [
-  {"title":"","media_list":[],"string_list_data":[{"value":"alice","timestamp":1700000000}]},
-  {"title":"","media_list":[],"string_list_data":[{"value":"charlie","timestamp":1700000000}]}
+  {
+    "title": "",
+    "media_list": [],
+    "string_list_data": [{ "value": "alice", "timestamp": 1700000000 }]
+  },
+  {
+    "title": "",
+    "media_list": [],
+    "string_list_data": [{ "value": "charlie", "timestamp": 1700000000 }]
+  }
 ]
