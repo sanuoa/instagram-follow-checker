@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
 import Icon from "./components/Icon.jsx";
-import ImportCard from "./components/ImportCard.jsx";
+import ExportUpload from "./components/ExportUpload.jsx";
 import Results from "./components/Results.jsx";
-import { readImportFiles } from "./lib/files.js";
+import { readExportSelection } from "./lib/files.js";
 import { compareAccounts, mergeImports, parseExport } from "./lib/instagram.js";
 import { demoFollowers, demoFollowing } from "./data/demo.js";
 import "./styles.css";
@@ -21,8 +21,9 @@ export default function App() {
   const [comparing, setComparing] = useState(false);
   const [notice, setNotice] = useState("");
   const [inputVersion, setInputVersion] = useState(0);
+  const [ignoredFiles, setIgnoredFiles] = useState([]);
   // A newer selection or Clear invalidates an older, still-reading import.
-  const versions = useRef({ followers: 0, following: 0, comparison: 0 });
+  const versions = useRef({ followers: 0, comparison: 0 });
   const ready =
     imports.followers.status === "ready" &&
     imports.following.status === "ready";
@@ -41,31 +42,32 @@ export default function App() {
     (state) => state.status !== "idle",
   );
 
-  async function handleImport(kind, files) {
-    const version = ++versions.current[kind];
+  async function handleImport(files) {
+    const version = ++versions.current.followers;
     versions.current.comparison += 1;
     setComparing(false);
     setComparison(null);
     setIsDemo(false);
     setNotice("");
-    // Demo and personal data should never be combined accidentally.
-    setImports((current) => ({
-      ...(isDemo ? emptyImports() : current),
-      [kind]: { status: "loading", files: [], error: "" },
-    }));
+    setIgnoredFiles([]);
+    setImports({
+      followers: { status: "loading", files: [], error: "" },
+      following: emptyImport(),
+    });
     try {
-      const results = await readImportFiles(files, kind);
-      if (versions.current[kind] !== version) return;
-      setImports((current) => ({
-        ...current,
-        [kind]: { status: "ready", files: results, error: "" },
-      }));
+      const results = await readExportSelection(files);
+      if (versions.current.followers !== version) return;
+      setImports({
+        followers: { status: "ready", files: results.followers, error: "" },
+        following: { status: "ready", files: results.following, error: "" },
+      });
+      setIgnoredFiles(results.ignored);
     } catch (error) {
-      if (versions.current[kind] !== version) return;
-      setImports((current) => ({
-        ...current,
-        [kind]: { status: "error", files: [], error: error.message },
-      }));
+      if (versions.current.followers !== version) return;
+      setImports({
+        followers: { status: "error", files: [], error: error.message },
+        following: emptyImport(),
+      });
     }
   }
 
@@ -90,7 +92,6 @@ export default function App() {
 
   function invalidatePendingWork() {
     versions.current.followers += 1;
-    versions.current.following += 1;
     versions.current.comparison += 1;
     setComparing(false);
     setInputVersion((value) => value + 1);
@@ -99,6 +100,7 @@ export default function App() {
   function clearAll() {
     invalidatePendingWork();
     setImports(emptyImports());
+    setIgnoredFiles([]);
     setComparison(null);
     setIsDemo(false);
     setNotice("All imported data and results have been cleared.");
@@ -106,6 +108,7 @@ export default function App() {
 
   function loadDemo() {
     invalidatePendingWork();
+    setIgnoredFiles([]);
     const followers = {
       ...parseExport(demoFollowers, "followers"),
       name: "demo_followers.json",
@@ -241,9 +244,15 @@ export default function App() {
             </button>
           </div>
           <p className="section-description">
-            Choose the JSON files from your own Instagram export. No account
-            access needed.
+            Select your Instagram JSON files together. We’ll detect followers
+            and following automatically.
           </p>
+          <ExportUpload
+            imports={imports}
+            ignoredFiles={ignoredFiles}
+            onImport={handleImport}
+            inputVersion={inputVersion}
+          />
           <aside
             className="export-notice"
             aria-label="Where to export your Instagram data"
@@ -266,20 +275,6 @@ export default function App() {
               date range. Menu labels may vary.
             </p>
           </aside>
-          <div className="import-grid">
-            <ImportCard
-              kind="followers"
-              state={imports.followers}
-              onImport={handleImport}
-              inputVersion={inputVersion}
-            />
-            <ImportCard
-              kind="following"
-              state={imports.following}
-              onImport={handleImport}
-              inputVersion={inputVersion}
-            />
-          </div>
           <div className="import-actions">
             <span className="import-assurance">
               <Icon name="shield" size={16} />
@@ -370,8 +365,8 @@ export default function App() {
             </GuideStep>
             <GuideStep number="02" title="Find the right files">
               Unzip the download, then look inside connections /
-              followers_and_following. Select all followers_*.json files
-              together and following.json separately.
+              followers_and_following. Select all followers_*.json files and
+              following.json together in the upload area.
             </GuideStep>
             <GuideStep number="03" title="Compare your circle">
               Compare, switch categories, search, and export a CSV. Results
