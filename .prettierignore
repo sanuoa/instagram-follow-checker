@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-extension/
 coverage/
 test-results/
 playwright-report/
@@ -11,3 +12,4 @@ followers_and_following/
 !package.json
 !package-lock.json
 !tests/fixtures/**
+!extension/manifest.json

@@ -10,8 +10,10 @@
     "test:e2e": "npm run build && playwright test",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "format": "prettier --write src tests *.js *.json index.html README.md",
-    "format:check": "prettier --check src tests *.js *.json index.html README.md"
+    "format": "prettier --write src tests extension scripts *.js *.json index.html README.md",
+    "format:check": "prettier --check src tests extension scripts *.js *.json index.html README.md",
+    "build:extension": "vite build --base ./ --outDir dist-extension && node scripts/package-extension.mjs",
+    "test:extension": "npm run build:extension && playwright test --config playwright.extension.config.js"
   },
   "dependencies": {
     "react": "^19.3.1",
@@ -20,6 +22,7 @@
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "@vitejs/plugin-react": "^6.1.2",
+    "fflate": "^0.8.3",
     "prettier": "^3.9.10",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
