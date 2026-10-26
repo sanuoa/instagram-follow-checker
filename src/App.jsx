@@ -385,11 +385,46 @@ export default function App() {
         </div>
       </main>
       <footer className="site-footer">
-        <span>
-          FOLLOW / CHECKER<span className="footer-dot">·</span>Built for a
-          clearer picture.
-        </span>
-        <span>Independent tool. Not affiliated with Instagram or Meta.</span>
+        <div className="footer-about">
+          <span>
+            FOLLOW / CHECKER<span className="footer-dot">·</span>Built for a
+            clearer picture.
+          </span>
+          <span>Independent tool. Not affiliated with Instagram or Meta.</span>
+        </div>
+        <div className="footer-developer">
+          <p>
+            Developed by <strong>Sanupa Gunarathne</strong>
+          </p>
+          <nav
+            className="footer-socials"
+            aria-label="Developer social profiles"
+          >
+            {[
+              {
+                label: "LinkedIn",
+                url: "https://www.linkedin.com/in/sanupa-gunarathne-a0a5852a6/",
+              },
+              { label: "GitHub", url: "https://github.com/sanuoa" },
+              {
+                label: "Instagram",
+                url: "https://www.instagram.com/sanuoa.p/",
+              },
+            ].map(({ label, url }) => (
+              <a
+                key={label}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                referrerPolicy="no-referrer"
+                aria-label={`${label}: Sanupa Gunarathne (new tab)`}
+              >
+                {label}
+                <Icon name="external" size={12} />
+              </a>
+            ))}
+          </nav>
+        </div>
       </footer>
     </>
   );
