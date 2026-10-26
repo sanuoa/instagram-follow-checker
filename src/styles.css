@@ -208,7 +208,7 @@ p {
 .main-container::before {
   position: absolute;
   content: "";
-  width: 650px;
+  width: min(650px, 100%);
   height: 430px;
   top: -90px;
   left: -200px;
@@ -1141,6 +1141,41 @@ input[type="search"]::-webkit-search-cancel-button {
 .footer-dot {
   color: var(--orange);
   padding: 0 10px;
+}
+.footer-about {
+  display: grid;
+  gap: 7px;
+}
+.footer-developer {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+  font-size: 11px;
+}
+.footer-developer strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.footer-socials {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+.footer-socials a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 5px;
+  color: var(--orange);
+}
+.footer-socials a:hover {
+  color: #ffb075;
+}
+@media (max-width: 700px) {
+  .footer-developer {
+    justify-items: start;
+    margin-top: 12px;
+  }
 }
 
 @media (min-width: 1450px) {
