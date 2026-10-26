@@ -144,13 +144,87 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:e2e
 
 The browser test command builds the application, starts a production preview server, runs desktop and mobile scenarios, and stops the server. Unit tests cover supported and rejected schemas, title fallbacks, split imports, normalization, duplicates, empty lists, comparisons, file limits, and CSV security. Browser tests cover the real import and comparison flow, warnings, filtering, sorting, downloaded CSV contents, pagination, clearing, reloads, stale reads, profile links, mobile overflow, and the absence of external requests during the import workflow. They use synthetic data only.
 
+## Install as a Chrome or Edge extension
+
+The same React app can run as a **Manifest V3 browser extension**. Clicking its toolbar icon opens the checker in a full browser tab, giving the dashboard and file inputs enough space. It does not read your open Instagram page or your Instagram session. You still import your own JSON export.
+
+### Build the extension
+
+From this project folder, with dependencies installed:
+
+```sh
+npm run build:extension
+```
+
+This creates two generated outputs:
+
+- `dist-extension/`: the unpacked, installable extension folder.
+- `instagram-follow-checker-extension.zip`: a distributable ZIP with `manifest.json` at its root. It contains only the built app, extension launcher, and icons. Source code, tests, and private exports are excluded.
+
+The normal `npm run build` still produces the website in `dist/`. The extension build uses relative asset paths and bundles all runtime scripts locally. It needs no running Vite server once installed.
+
+### Load it into your browser
+
+1. Build the extension, or download the provided extension ZIP and **extract it into a folder** on your computer. Extracting the ZIP does not require Node.js or an IDE.
+2. In desktop Chrome, open `chrome://extensions`. In desktop Edge, open `edge://extensions`.
+3. Enable **Developer mode**.
+4. Click **Load unpacked**, then select `dist-extension/` or the extracted ZIP folder. Choose the folder directly containing `manifest.json`, not the ZIP file itself.
+5. Open the browser's Extensions menu, pin **Instagram Follow Checker**, and click its icon. The checker opens in its own tab.
+6. Import your files or choose **Try a demo**. All existing comparison, search, sorting, and CSV features work there.
+
+Keep the extracted folder where it is; the browser loads the extension from it. After rebuilding, click **Reload** on its extension card and reopen the app tab. To remove it, click **Remove** on that card. Organization-managed browsers may disable developer-mode installation.
+
+### Download the built extension from GitHub
+
+You do not need an IDE or Node.js for this option. The **Build browser extension** GitHub Actions workflow builds an installable ZIP when extension-related changes reach `dev` or `main`.
+
+1. Sign in to GitHub and open this repository's **Actions** tab.
+2. Select **Build browser extension**, then open the latest successful run for `dev` (or `main` after merging).
+3. Scroll to **Artifacts** at the bottom of that run and click **instagram-follow-checker-extension** to download it.
+4. Extract the downloaded ZIP, then follow the **Load unpacked** steps above. This artifact contains the built extension, with `manifest.json` at its root.
+
+If a run is in progress, wait for its green success check. If Actions are disabled, the repository owner must enable them first. Artifacts expire after 30 days; once the workflow is on the default branch, you can use **Run workflow** to generate a fresh package. GitHub's **Code → Download ZIP** button downloads source code, which requires building before it can be loaded as an extension.
+
+### What the extension adds
+
+- `extension/manifest.json`: extension metadata, icons, the toolbar action, and a restrictive content security policy.
+- `extension/background.js`: a small browser-managed service worker that opens the app tab when the toolbar icon is clicked. It does not process, store, or upload imported data.
+- `extension/icons/`: packaged PNG toolbar and extension icons.
+- `scripts/package-extension.mjs`: assembles the built app and extension files into the installable ZIP.
+
+No `permissions`, host permissions, content scripts, or access to Instagram pages are requested. Opening a tab with `chrome.tabs.create` does not require the permission to read your tabs. The extension's content security policy blocks network connections from the app; profile and developer links still open normally when you click them.
+
+Test the real unpacked extension with Playwright's Chromium:
+
+```sh
+npm run test:extension
+# Cloud workspace with an installed Chromium:
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:extension
+```
+
+The test loads the extension into an isolated temporary browser profile, invokes the toolbar handler, imports synthetic files, checks all result categories and CSV downloading, verifies clearing/reloading, checks for external requests, and inspects the ZIP contents.
+
+The onboarding cloud browser currently has an administrator `ExtensionInstallBlocklist` policy that blocks additional extensions. Its native extension installation test cannot pass in that environment. Do not change browser management policies to work around this. Run the full extension suite in a personal environment that permits unpacked extensions. Independent checks for the ZIP and the packaged app running under the same content security policy can run in the cloud with:
+
+```sh
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npx playwright test --config playwright.extension.config.js --grep "ZIP|packaged app"
+```
+
+Those checks validate the archive and app behavior under the policy, but do not establish that the extension installs or its toolbar action runs in a real extension context. Native Chrome/Edge installation remains to be verified locally.
+
+This package targets **desktop Chrome and Edge**. Automated extension validation runs in Chromium; Edge installation uses the same Manifest V3 package. Firefox, Safari, and mobile browser extension support require separate compatibility work and have not been validated.
+
+### Publishing to an extension store
+
+Developer-mode installation and store publication are separate. The ZIP is suitable for uploading as the package, but store publication also needs your developer account, listing details, screenshots, privacy disclosures, and review. Store approval is not guaranteed. No store listing has been published automatically. Before publishing an update, increment `version` in `extension/manifest.json`, rebuild, and test it.
+
 ## Privacy and safety
 
-All processing happens in the browser with the File API. The app makes no requests containing imports, usernames, or results. There are no analytics, remote fonts, external runtime services, cookies, local storage, IndexedDB, or service workers. The app does not request credentials, scrape Instagram, or automate unfollowing.
+All processing happens in the browser with the File API. The app makes no requests containing imports, usernames, or results. There are no analytics, remote fonts, external runtime services, cookies, local storage, or IndexedDB. The website has no service worker; the optional extension uses one only to open its own tab. The app does not request credentials, scrape Instagram, or automate unfollowing.
 
 Profile URLs are constructed from validated usernames, never imported `href` values. They open Instagram only when clicked, in a new tab with `noopener noreferrer` and no referrer. CSV cells are quoted and escaped; formula-like cell prefixes are neutralized before download. Invalid usernames cannot reach the CSV or profile-link helpers.
 
-Real exports, ZIPs, HTML exports, CSVs, and common private-data directories are ignored by Git. Keep your real downloads outside the checkout anyway. Only package manifests, the app entry HTML, and the explicitly allowed synthetic fixtures are exceptions. Clear removes app data from the page; it does not delete original files or downloaded CSVs on disk.
+Real exports, generated ZIPs, HTML exports, CSVs, and common private-data directories are ignored by Git. Keep your real downloads outside the checkout anyway. Package and extension manifests, the app entry HTML, and the explicitly allowed synthetic fixtures are exceptions. Clear removes app data from the page; it does not delete original files or downloaded CSVs on disk.
 
 ## Branch workflow
 
@@ -162,6 +236,7 @@ The implementation is integrated into **`dev`** with separate stage branches and
 - `bug/import-diagnostics`: malformed-entry reporting and report filter reset fixes.
 - `docs/development-guide`: this guide and final project housekeeping.
 - `feat/unified-export-import`: one upload area, automatic detection, combined-file support, updated schema support, and guidance below the uploader.
+- `feat/browser-extension`: a separately built Chrome/Edge extension, ZIP packaging, installation instructions, and real extension-browser validation.
 
 For your next change, branch from `dev`, make one focused change, run the checks, and commit it:
 
