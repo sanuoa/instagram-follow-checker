@@ -174,6 +174,17 @@ The normal `npm run build` still produces the website in `dist/`. The extension 
 
 Keep the extracted folder where it is; the browser loads the extension from it. After rebuilding, click **Reload** on its extension card and reopen the app tab. To remove it, click **Remove** on that card. Organization-managed browsers may disable developer-mode installation.
 
+### Download the built extension from GitHub
+
+You do not need an IDE or Node.js for this option. The **Build browser extension** GitHub Actions workflow builds an installable ZIP when extension-related changes reach `dev` or `main`.
+
+1. Sign in to GitHub and open this repository's **Actions** tab.
+2. Select **Build browser extension**, then open the latest successful run for `dev` (or `main` after merging).
+3. Scroll to **Artifacts** at the bottom of that run and click **instagram-follow-checker-extension** to download it.
+4. Extract the downloaded ZIP, then follow the **Load unpacked** steps above. This artifact contains the built extension, with `manifest.json` at its root.
+
+If a run is in progress, wait for its green success check. If Actions are disabled, the repository owner must enable them first. Artifacts expire after 30 days; once the workflow is on the default branch, you can use **Run workflow** to generate a fresh package. GitHub's **Code → Download ZIP** button downloads source code, which requires building before it can be loaded as an extension.
+
 ### What the extension adds
 
 - `extension/manifest.json`: extension metadata, icons, the toolbar action, and a restrictive content security policy.
